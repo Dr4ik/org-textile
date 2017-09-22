@@ -225,6 +225,7 @@ Org's LINK object is documented in \"Hyperlinks\"."
 	(path (org-element-property :path link))
 	(backend (plist-get info :backend)))
     (cond
+     ((org-export-custom-protocol-maybe link desc 'textile))
      ((and (not desc) (org-file-image-p path))
       (format "!%s!" path))
      ((and (string= type "file"))
