@@ -90,7 +90,8 @@
     (underline . org-textile-identity)
     (verbatim . org-textile-verbatim)
     (verse-block . org-textile-identity))
-  :options-alist '((:headline-levels nil nil 5 t))
+  :options-alist '((:headline-levels nil nil 5 t)
+		   (:textile-shortlinks "TEXTILE_SHORTLINKS" "textilesl" nil t))
   :menu-entry
   '(?x "Export to Textile"
        ((?x "As Textile buffer"
@@ -221,14 +222,18 @@ INFO is a plist holding contextual information.
 
 Org's LINK object is documented in \"Hyperlinks\"."
   (let ((type (org-element-property :type link))
-	(path (org-element-property :path link)))
+	(path (org-element-property :path link))
+	(backend (plist-get info :backend)))
     (cond
      ((and (not desc) (org-file-image-p path))
       (format "!%s!" path))
      ((and (string= type "file"))
       (format "!%s(%s)!" path (or desc path)))
-     (t
-      (format "\"%s\":%s:%s" (or desc (format "%s:%s" type path)) type path)))))
+     (t (if (and (plist-get info :textile-shortlinks) (not desc))
+	    (format "%s:%s" type path)
+	  (format "\"%s\":%s:%s" (or desc (format "%s:%s" type path)) type path)
+	  )
+	))))
 
 
 ;;; Template
