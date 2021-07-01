@@ -76,7 +76,7 @@
     (radio-target . org-textile-identity)
     (section . org-textile-identity)
     (special-block . org-textile-identity)
-    (src-block . org-textile-identity)
+    (src-block . org-textile-src-block)
     (statistics-cookie . org-textile-identity)
     (strike-through . org-textile-strike-through)
     (subscript . org-textile-identity)
@@ -90,7 +90,9 @@
     (underline . org-textile-identity)
     (verbatim . org-textile-verbatim)
     (verse-block . org-textile-identity))
-  :options-alist '((:headline-levels nil nil 5 t))
+  :options-alist '((:headline-levels nil nil 5 t)
+		   (:textile-shortlinks "TEXTILE_SHORTLINKS" "textilesl" nil t)
+		   (:textile-codeashtml "TEXTILE_CODE_AS_HTML" "textilecodehtml" nil t))
   :menu-entry
   '(?x "Export to Textile"
        ((?x "As Textile buffer"
@@ -120,6 +122,11 @@ the same function without optional `keep-lead` argument."
 CONTENTS is its contents, as a string or nil.  INFO is ignored."
   (org-export-expand blob contents))
 
+(defun org-textile-src-block (blob contents info)
+  (if (plist-get info :textile-codeashtml)
+      (concat "<pre><code class=\"" (org-element-property :language blob)
+	  "\">" (org-element-property :value blob) "</code></pre>")
+    (org-textile-example-block blob contents info)))
 
 ;;; Inline Text Format
 (defun org-textile-bold (bold contents info)
@@ -239,14 +246,19 @@ INFO is a plist holding contextual information.
 
 Org's LINK object is documented in \"Hyperlinks\"."
   (let ((type (org-element-property :type link))
-	(path (org-element-property :path link)))
+	(path (org-element-property :path link))
+	(backend (plist-get info :backend)))
     (cond
+     ((org-export-custom-protocol-maybe link desc 'textile))
      ((and (not desc) (org-file-image-p path))
       (format "!%s!" path))
      ((and (string= type "file"))
       (format "!%s(%s)!" path (or desc path)))
-     (t
-      (format "\"%s\":%s:%s" (or desc (format "%s:%s" type path)) type path)))))
+     (t (if (and (plist-get info :textile-shortlinks) (not desc))
+	    (format "%s:%s" type path)
+	  (format "\"%s\":%s:%s" (or desc (format "%s:%s" type path)) type path)
+	  )
+	))))
 
 
 ;;; Template
