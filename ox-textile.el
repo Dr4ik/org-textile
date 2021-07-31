@@ -123,10 +123,8 @@ CONTENTS is its contents, as a string or nil.  INFO is ignored."
   (org-export-expand blob contents))
 
 (defun org-textile-src-block (blob contents info)
-  (if (plist-get info :textile-codeashtml)
-      (concat "<pre><code class=\"" (org-element-property :language blob)
-	  "\">" (org-element-property :value blob) "</code></pre>")
-    (org-textile-example-block blob contents info)))
+  (concat "<pre><code class=\"" (org-element-property :language blob) "\">\n" (org-element-property :value blob) "</code></pre>")
+  )
 
 ;;; Inline Text Format
 (defun org-textile-bold (bold contents info)
